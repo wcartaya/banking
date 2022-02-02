@@ -13,12 +13,12 @@ type CustomerRepositoryDB struct {
 	client *sql.DB
 }
 
-func (d CustomerRepositoryDB) FindAll() ([]Customer, error) {
+func (d CustomerRepositoryDB) FindAll() ([]Customer, *errs.AppError) {
 
 	findCustomerSql := "select customer_id,	name, city, zipcode, date_of_birth, status  from customers"
 	rows, err := d.client.Query(findCustomerSql)
 	if err != nil {
-		log.Println("Error while quering customer table" + err.Error())
+		return nil, errs.NewUnexpedtedError("Unexpected database error")
 	}
 	customers := make([]Customer, 0)
 
@@ -31,18 +31,6 @@ func (d CustomerRepositoryDB) FindAll() ([]Customer, error) {
 		customers = append(customers, c)
 	}
 	return customers, nil
-}
-
-func NewCustomerRepositoryDB() CustomerRepositoryDB {
-	client, err := sql.Open("mysql", "root:Wc4rt4y4.07@tcp(localhost:3306)/banking")
-	if err != nil {
-		panic(err)
-	}
-	// See "Important settings" section.
-	client.SetConnMaxLifetime(time.Minute * 3)
-	client.SetMaxOpenConns(10)
-	client.SetMaxIdleConns(10)
-	return CustomerRepositoryDB{client}
 }
 
 func (d CustomerRepositoryDB) ById(id string) (*Customer, *errs.AppError) {
@@ -60,4 +48,16 @@ func (d CustomerRepositoryDB) ById(id string) (*Customer, *errs.AppError) {
 		}
 	}
 	return &c, nil
+}
+
+func NewCustomerRepositoryDB() CustomerRepositoryDB {
+	client, err := sql.Open("mysql", "root:Wc4rt4y4.07@tcp(localhost:3306)/banking")
+	if err != nil {
+		panic(err)
+	}
+	// See "Important settings" section.
+	client.SetConnMaxLifetime(time.Minute * 3)
+	client.SetMaxOpenConns(10)
+	client.SetMaxIdleConns(10)
+	return CustomerRepositoryDB{client}
 }
