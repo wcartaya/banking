@@ -3,8 +3,6 @@ package app
 import (
 	"banking/service"
 	"encoding/json"
-	"encoding/xml"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -34,6 +32,17 @@ func (ch *CustomerHandlers) getCustomer(w http.ResponseWriter, r *http.Request) 
 
 }
 
+func (ch *CustomerHandlers) getAllCustomers(w http.ResponseWriter, r *http.Request) {
+	status := r.URL.Query().Get("status")
+	customers, err := ch.service.GetAllCustomer(status)
+	if err != nil {
+		writeResponse(w, err.Code, err.AsMessage())
+	} else {
+		writeResponse(w, http.StatusOK, customers)
+	}
+
+}
+
 func writeResponse(w http.ResponseWriter, code int, data interface{}) {
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(code)
@@ -42,22 +51,7 @@ func writeResponse(w http.ResponseWriter, code int, data interface{}) {
 	}
 }
 
-func (ch *CustomerHandlers) getAllCustomers(w http.ResponseWriter, r *http.Request) {
-	/* customers := []Customer{
-		{"María", "Caracas", "1651"},
-		{"Juan", "Valencia", "1666"},
-	} */
-	customers, _ := ch.service.GetAllCustomer()
-
-	if r.Header.Get("Content-Type") == "application/xml" {
-		w.Header().Add("Content-Type", "application/xml")
-		xml.NewEncoder(w).Encode(customers)
-	} else {
-		w.Header().Add("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(customers)
-	}
-}
-
+/*
 func getCustomer(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	fmt.Fprint(w, vars["customer_id"])
@@ -66,3 +60,4 @@ func getCustomer(w http.ResponseWriter, r *http.Request) {
 func createCustomer(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "Post request received")
 }
+*/
